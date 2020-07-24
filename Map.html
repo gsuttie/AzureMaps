@@ -1,0 +1,88 @@
+﻿
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <title>My Map</title>
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+</head>
+<body>
+
+    <div id="myMap" style="position:relative;width:1000px;height:800px;"></div>
+    <script type="text/javascript" id="pindata" src="PinData.js"></script>
+
+    <script type='text/javascript'>
+
+        var map;
+
+        function DisplayMap() {
+            map = new atlas.Map('myMap', {
+                'subscription-key': '<Add your Azure Map Subscription key here>',
+                zoom: 1
+            });
+            var pins = [];
+        }
+
+        function DisplayMapData() {
+
+            map.events.add('load', function () {
+
+                var pins = [];
+                for (var i = 0; i < vPinData.Pins.length; i++) {
+                    var oPin = vPinData.Pins[i];
+                    var name = oPin.name;
+                    var long = oPin.long;
+                    var lat = oPin.lat;
+                    var text = oPin.text;
+                    var pinPosition = [long, lat];
+                    var pin = new atlas.data.Feature(new atlas.data.Point(pinPosition), {
+                        icon: 'pin-red',
+                        iconSize: 1,
+                        title: name,
+                        textx: text
+                    });
+                    // Add the pin to the map and set some pin layer options that apply to all pins in the layer.
+                    map.addPins([pin], {
+                        name: 'default-pin-layer' + i,
+                        fontColor: '#000',
+                        fontSize: 14,
+                        textOffset: [0, 20],
+                        textFont: 'SegoeUi-Bold'
+                    });
+
+                    /* Create content for popup */
+                    var popupContentElement = document.createElement("div");
+                    popupContentElement.style.padding = "8px";
+                    var popupNameElement = document.createElement("div");
+                    popupNameElement.innerText = text;
+                    popupContentElement.appendChild(popupNameElement);
+
+                    /* Create a popup */
+                    var popup = new atlas.Popup({
+                        content: popupContentElement,
+                        position: pinPosition,
+                        pixelOffset: [0, 0]
+                    });
+
+                    /* Add an event listener for mouse over */
+                    map.addEventListener("mouseover", "default-pin-layer" + i, (e) => {
+                        var popupcontent = document.createElement("div");
+                        popupcontent.innerHTML = " " + e.features[0].properties.textx + " " + '<div style="padding:10px"><img src="../js/Adventsmall.png"></img></div>';
+                        popup.setPopupOptions({
+                            position: e.features[0].geometry.coordinates,
+                            content: popupcontent
+                        });
+                        popup.open(map);
+                    });
+                }
+            });
+        }
+
+        DisplayMap();
+        DisplayMapData();
+    </script>
+</body>
+</html>
+
